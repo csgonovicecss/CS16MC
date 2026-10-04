@@ -1,32 +1,34 @@
 # Inventory
 
-switch between primary weapons: 1
-switch between secondary weapons: 2
-switch between melees: 3
-switch between projectiles: 4
+* **Switch between primary weapons:** `1`
+* **Switch between secondary weapons:** `2`
+* **Switch between melees:** `3`
+* **Switch between projectiles:** `4`
 
 # Weapons
 
-shoot: lmb
-remove silencer: rmb
-reload: r
+* **Shoot:** `LMB`
+* **Remove silencer:** `RMB`
+* **Reload:** `R`
 
 # Projectiles
 
-throw: lmb
-hold pin: hold lmb
-cancel: switch to any weapon
+* **Throw:** `LMB`
+* **Hold pin:** `Hold LMB`
+* **Cancel:** `Switch to any weapon`
 
 # Movement
 
-walk: shift
-crouch: ctrl
-move: wasd
-jump: space
+* **Walk:** `Shift`
+* **Crouch:** `Ctrl`
+* **Move:** `WASD`
+* **Jump:** `Space`
 
 # Misc
-radio: g
-mirror viewmodel: h
+
+* **Radio:** `G`
+* **Mirror viewmodel:** `H`
 
 # Debug
-debug menu: f8
+
+* **Debug menu:** `F8`
