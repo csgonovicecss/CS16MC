@@ -1,38 +1,49 @@
 # CS16MC
 
-A 26.2 fabric mod, which reimplements Counter-Strike 1.6 weapons inside of Minecraft 26.2
-It integrates ALL, yes ALL the cs16 weapons into minecraft, with remade functionality.
+A 26.2 Fabric mod, which reimplements Counter-Strike 1.6 weapons inside of Minecraft 26.2.
+
+It integrates **ALL**, yes **ALL** the CS16 weapons into Minecraft, with remade functionality.
 
 [![Controls](https://img.shields.io/badge/Controls-View-blue)](https://github.com/csgonovicecss/CS16MC/blob/main/controls.md)
 
+## About
 
-# This is a little project of mine that i started because of the rust rewrites, and i though, why shouldnt i write a mod for minecraft with fabric loom that reimplements cs16 weapons into minecraft??
+This is a little project of mine that I started because of the Rust rewrites, and I thought, why shouldn't I write a mod for Minecraft with Fabric Loom that reimplements CS16 weapons into Minecraft??
 
+## Features & Current Mod State
 
+* All CS16 weapons (including grenades!!!)
+* Weapons can damage mobs and blocks!
+* Blocks such as weed or grass (most blocks that aren't full) are penetrable.
+* Mobs are alerted by gunshots (radius depends on surrounding blocks and whether the weapon has a silencer on.)
+* Grenade physics are basically identical to CS16's (really cool!)
+* I tried to optimize this as much as possible and it is getting around stable 140 FPS on my old laptop. (It will be really laggy at like the first 5 seconds of the world generating.)
+* It supports Sodium and other optimization mods. (Shaders aren't tested yet.)
 
-# features and current mod state:
+## FAQ
 
-all cs16 weapons (including grenades!!!)
-weapons can damage mobs and blocks!
-blocks such as weed or grass (most blocks that arent full) are penetrable.
-mobs are alerted by gunshots (radius depends on surrounding blocks and wheather the weapon has a silencer on.)
-grenade physics are basically identical to cs16's (really cool!)
-i tried to optimize this as much as possible and it is getting around stable 140fps on my old laptop. (it will be really laggy at like the first 5 seconds of the world generating.)
-it supports sodium and other optimization mods, (shaders arent tested yet.)
+### Will this get updated to newer versions?
 
-# FAQ
+Probably, but if it reaches a version that uses a new Java version, or just overall changes most things, I'll most likely still update it, but don't take my word for it.
 
-# Will this get updated to newer versions?
-probably, but if it reaches a version that uses a new java version, or just overall changes most things, ill most likely still update it but dont take my word for it.
+### Will this get bug fixes?
 
-# Will this get bug fixes?
-maybe, i dont plan to, only if its gamebreaking.
+Maybe, I don't plan to, only if it's gamebreaking.
 
-# Was ai used?
-partially, i mostly used it to fix bugs in my code, im still learning java.
+### Was AI used?
 
-# How do i build this from source?
-this includes a gradle wrapper and gradlew.bat
-so cd into the main project folder, and type gradlew.bat build inside a command prompt, it will output a jar file inside of build/libs folder.
+Partially, I mostly used it to fix bugs in my code. I'm still learning Java.
 
-requirements: Java 25+
+### How do I build this from source?
+
+This includes a Gradle wrapper and `gradlew.bat`.
+
+So, `cd` into the main project folder and type:
+
+```bat
+gradlew.bat build
+```
+
+inside a Command Prompt. It will output a `.jar` file inside of the `build/libs` folder.
+
+**Requirements:** Java 25+
