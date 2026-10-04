@@ -33,6 +33,7 @@ This is a little project of mine that I started because of the Rust rewrites, an
 * Grenade physics are basically identical to CS16's (really cool!)
 * I tried to optimize this as much as possible and it is getting around stable 140 FPS on my old laptop. (It will be really laggy at like the first 5 seconds of the world generating.)
 * It supports Sodium and other optimization mods. (Shaders aren't tested yet.)
+* The mod is in a pretty good state, there are some known bugs, but they arent major.
 
 ## FAQ
 
