@@ -28,3 +28,9 @@ maybe, i dont plan to, only if its gamebreaking.
 
 # Was ai used?
 partially, i mostly used it to fix bugs in my code, im still learning java.
+
+# How do i build this from source?
+this includes a gradle wrapper and gradlew.bat
+so cd into the main project folder, and type gradlew.bat build inside a command prompt, it will output a jar file inside of build/libs folder.
+
+requirements: Java 25+
