@@ -4,8 +4,6 @@ A 26.2 Fabric mod, which reimplements Counter-Strike 1.6 weapons inside of Minec
 
 It integrates **ALL**, yes **ALL** the CS16 weapons into Minecraft, with remade functionality.
 
-# Scroll down for the FAQ and instructions on how to build the files.
-
 [![Controls](https://img.shields.io/badge/Controls-View-blue)](https://github.com/csgonovicecss/CS16MC/blob/main/controls.md)
 
 ## Showcase
