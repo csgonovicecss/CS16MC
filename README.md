@@ -6,6 +6,20 @@ It integrates **ALL**, yes **ALL** the CS16 weapons into Minecraft, with remade 
 
 [![Controls](https://img.shields.io/badge/Controls-View-blue)](https://github.com/csgonovicecss/CS16MC/blob/main/controls.md)
 
+## Showcase
+
+### Block Damage
+![Block Damage](block%20damage.gif)
+
+### Mob Damage
+![Mob Damage](mob%20damage.gif)
+
+### Projectiles
+![Projectiles](projectiles.gif)
+
+### Weapons
+![Weapons](weapons.gif)
+
 ## About
 
 This is a little project of mine that I started because of the Rust rewrites, and I thought, why shouldn't I write a mod for Minecraft with Fabric Loom that reimplements CS16 weapons into Minecraft??
