@@ -22,7 +22,7 @@ It integrates **ALL**, yes **ALL** the CS16 weapons into Minecraft, with remade 
 
 ## About
 
-This is a little project of mine that I started because of the Rust rewrites, and I thought, why shouldn't I write a mod for Minecraft with Fabric Loom that reimplements CS16 weapons into Minecraft (its cool)??
+This is a little project of mine that I started because of the Rust rewrites, and I thought, why shouldn't I write a mod for Minecraft with Fabric Loom that reimplements CS16 weapons into Minecraft??
 
 ## Features & Current Mod State
 
