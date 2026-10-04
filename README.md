@@ -67,3 +67,14 @@ inside a Command Prompt. It will output a `.jar` file inside of the `build/libs`
 * A copy of Counter-Strike 1.6 installed from Steam (dont pirate pls)
 
 (if you plan on forking or redistributing this, im not saying that you need to, but you could credit me :D)
+
+## Disclaimer
+
+CS16MC doesn't include or redistribute any Counter-Strike 1.6 files. You need to have your own copy of Counter-Strike 1.6 installed through Steam.
+
+The mod reads the weapons, sounds, and other required assets directly from your own CS 1.6 installation while the game is running. Nothing from the original game is included with the mod or hosted in this repository.
+
+CS16MC is a free fan-made project and is not affiliated with, endorsed by, or sponsored by Valve.
+
+Counter-Strike 1.6 and its original assets remain the property of Valve and their respective rights holders.
+
