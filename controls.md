@@ -1,5 +1,3 @@
-controls:
-
 # Inventory
 
 switch between primary weapons: 1
