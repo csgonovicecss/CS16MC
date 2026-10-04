@@ -23,7 +23,7 @@ public final class CS16SoundManager {
         void error(String message);
     }
 
-    private record Sample(AudioFormat format, byte[] data) {}
+    record Sample(AudioFormat format, byte[] data) {}
 
     private volatile Source source;
     private final Map<String, Sample> cache = new ConcurrentHashMap<>();
@@ -41,7 +41,12 @@ public final class CS16SoundManager {
     public void init(Source s) { this.source = s; }
 
     /** Plays "weapons/ak47-1.wav" or "sound/weapons/ak47-1.wav". Returns false if the file doesn't exist. */
-    public boolean play(String name, double volume) {
+    public boolean play(String name, double volume) { return play(name, volume, false); }
+
+    /** Underwater version: low-passed and quieter. */
+    public boolean playMuffled(String name, double volume) { return play(name, volume * 0.8, true); }
+
+    private boolean play(String name, double volume, boolean muffled) {
         Source s = source;
         if (s == null || audioBroken.get()) return false;
         String rel = normalize(name);
@@ -50,7 +55,7 @@ public final class CS16SoundManager {
             if (reported.add(rel)) s.error("missing sound: " + rel);
             return false;
         }
-        exec.execute(() -> playNow(rel, p, volume));
+        exec.execute(() -> playNow(rel, p, volume, muffled));
         return true;
     }
 
@@ -63,6 +68,14 @@ public final class CS16SoundManager {
     public boolean playFirst(double volume, String... names) {
         for (String n : names) if (exists(n)) return play(n, volume);
         return false;
+    }
+
+    /** Like playAnyOf but muffled (shooting underwater). */
+    public boolean playAnyOfMuffled(double volume, String... names) {
+        java.util.List<String> ok = new java.util.ArrayList<>();
+        for (String n : names) if (exists(n)) ok.add(n);
+        if (ok.isEmpty()) return false;
+        return playMuffled(ok.get(ThreadLocalRandom.current().nextInt(ok.size())), volume);
     }
 
     /** Picks a random existing name from the list. */
@@ -95,13 +108,15 @@ public final class CS16SoundManager {
         return n;
     }
 
-    private void playNow(String key, Path file, double volume) {
+    private void playNow(String key, Path file, double volume, boolean muffled) {
         Source s = source;
         try {
-            Sample sample = cache.get(key);
+            String ck = muffled ? key + "#muffled" : key;
+            Sample sample = cache.get(ck);
             if (sample == null) {
                 sample = decode(file);
-                cache.put(key, sample);
+                if (muffled) sample = muffle(sample);
+                cache.put(ck, sample);
             }
             if (!voices.tryAcquire()) return;
             try {
@@ -130,11 +145,12 @@ public final class CS16SoundManager {
         }
     }
 
-    private static Sample decode(Path file) throws Exception {
+    /** Always returns 16-bit signed little-endian PCM so filters and mixing are simple. */
+    static Sample decode(Path file) throws Exception {
         try (AudioInputStream in = AudioSystem.getAudioInputStream(file.toFile())) {
             AudioFormat f = in.getFormat();
             AudioInputStream use = in;
-            if (f.getEncoding() != AudioFormat.Encoding.PCM_SIGNED && f.getEncoding() != AudioFormat.Encoding.PCM_UNSIGNED) {
+            if (f.getEncoding() != AudioFormat.Encoding.PCM_SIGNED || f.getSampleSizeInBits() != 16 || f.isBigEndian()) {
                 AudioFormat target = new AudioFormat(AudioFormat.Encoding.PCM_SIGNED, f.getSampleRate(), 16,
                         f.getChannels(), f.getChannels() * 2, f.getSampleRate(), false);
                 use = AudioSystem.getAudioInputStream(target, in);
@@ -145,5 +161,23 @@ public final class CS16SoundManager {
             if (data.length % frame != 0) data = java.util.Arrays.copyOf(data, data.length - data.length % frame);
             return new Sample(f, data);
         }
+    }
+
+    /** Two-pole low-pass (~300 Hz at 22 kHz) so shots underwater sound dull and distant. */
+    static Sample muffle(Sample s) {
+        byte[] d = s.data().clone();
+        int ch = Math.max(1, s.format().getChannels());
+        double a = 0.09;
+        double[] y1 = new double[ch], y2 = new double[ch];
+        for (int i = 0; i + 1 < d.length; i += 2) {
+            int c = (i / 2) % ch;
+            double x = (short) ((d[i] & 0xFF) | (d[i + 1] << 8));
+            y1[c] += a * (x - y1[c]);
+            y2[c] += a * (y1[c] - y2[c]);
+            int o = (int) Math.max(-32768, Math.min(32767, Math.round(y2[c] * 1.6))); // make up some of the lost level
+            d[i] = (byte) o;
+            d[i + 1] = (byte) (o >> 8);
+        }
+        return new Sample(s.format(), d);
     }
 }
