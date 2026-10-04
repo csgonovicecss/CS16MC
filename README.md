@@ -46,4 +46,7 @@ gradlew.bat build
 
 inside a Command Prompt. It will output a `.jar` file inside of the `build/libs` folder.
 
-**Requirements:** Java 25+
+## Requirements
+
+* Java 25+
+* A copy of Counter-Strike 1.6 installed from Steam (dont pirate pls)
