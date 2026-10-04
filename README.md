@@ -65,3 +65,5 @@ inside a Command Prompt. It will output a `.jar` file inside of the `build/libs`
 
 * Java 25+
 * A copy of Counter-Strike 1.6 installed from Steam (dont pirate pls)
+
+(if you plan on forking or redistributing this, im not saying that you need to, but you could credit me :D)
