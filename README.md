@@ -3,6 +3,8 @@
 A 26.2 fabric mod, which reimplements Counter-Strike 1.6 weapons inside of Minecraft 26.2
 It integrates ALL, yes ALL the cs16 weapons into minecraft, with remade functionality.
 
+[![Controls](https://img.shields.io/badge/Controls-View-blue)](https://github.com/csgonovicecss/CS16MC/blob/main/controls.md)
+
 
 # This is a little project of mine that i started because of the rust rewrites, and i though, why shouldnt i write a mod for minecraft with fabric loom that reimplements cs16 weapons into minecraft??
 
