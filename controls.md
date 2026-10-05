@@ -26,7 +26,7 @@
 
 # Misc
 
-* **Radio:** `G`
+* **Radio:** `G` (feature removed)
 * **Mirror viewmodel:** `H`
 
 # Debug
