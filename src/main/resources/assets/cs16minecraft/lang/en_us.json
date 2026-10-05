@@ -1,0 +1,11 @@
+{
+  "key.category.cs16minecraft.main": "CS 1.6",
+  "key.cs16minecraft.crouch": "Crouch",
+  "key.cs16minecraft.walk": "Walk (slow)",
+  "key.cs16minecraft.reload": "Reload",
+  "key.cs16minecraft.quickswitch": "Quick weapon switch",
+  "key.cs16minecraft.use": "Use",
+  "key.cs16minecraft.scoreboard": "Scoreboard",
+  "key.cs16minecraft.mirror": "Mirror viewmodel",
+  "key.cs16minecraft.debug": "Toggle CS16 debug overlay"
+}

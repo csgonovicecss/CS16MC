@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "id": "cs16minecraft",
+  "version": "${version}",
+  "name": "CS 1.6 Minecraft",
+  "description": "A CS 1.6 gameplay layer on top of Minecraft. Loads the user's own locally installed Half-Life / CS 1.6 assets at runtime. No Valve assets are included.",
+  "authors": ["you"],
+  "license": "MIT",
+  "environment": "client",
+  "entrypoints": {
+    "client": ["com.example.cs16minecraft.client.CS16Client"]
+  },
+  "mixins": [
+    { "config": "cs16minecraft.mixins.json", "environment": "client" }
+  ],
+  "depends": {
+    "fabricloader": ">=0.19.5",
+    "minecraft": "~26.2",
+    "java": ">=25",
+    "fabric-api": "*"
+  }
+}

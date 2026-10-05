@@ -1,0 +1,7 @@
+{
+  "required": true,
+  "package": "com.example.cs16minecraft.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "client": [ "LivingEntityMixin", "PlayerMixin", "CameraMixin", "DeathScreenMixin", "GuiMixin", "ItemInHandRendererMixin", "ToastManagerMixin", "ScreenBlurMixin" ],
+  "injectors": { "defaultRequire": 1 }
+}
