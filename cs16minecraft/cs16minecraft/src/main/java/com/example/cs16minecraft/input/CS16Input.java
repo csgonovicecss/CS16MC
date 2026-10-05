@@ -23,7 +23,6 @@ public final class CS16Input {
     public static final KeyMapping QUICK_SWITCH = key("quickswitch", InputConstants.KEY_Q);
     public static final KeyMapping USE = key("use", InputConstants.KEY_E);
     public static final KeyMapping SCOREBOARD = key("scoreboard", InputConstants.KEY_TAB);
-    public static final KeyMapping RADIO = key("radio", InputConstants.KEY_G);
     public static final KeyMapping MIRROR = key("mirror", InputConstants.KEY_H);
     public static final KeyMapping DEBUG = key("debug", InputConstants.KEY_F8);
 

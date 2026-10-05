@@ -5,11 +5,14 @@ import com.example.cs16minecraft.config.CS16Config;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.tags.FluidTags;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
@@ -25,7 +28,7 @@ public final class CS16Ballistics {
 
     private CS16Ballistics() {}
 
-    private record Hit(Entity entity, Vec3 pos, boolean block, BlockPos blockPos) {}
+    private record Hit(Entity entity, Vec3 pos, boolean block, BlockPos blockPos, Direction face) {}
 
     public static void fire(Minecraft mc, LocalPlayer p, CS16Weapon w, double inaccuracyDeg) {
         Level level = p.level();
@@ -35,6 +38,7 @@ public final class CS16Ballistics {
             Vec3 dir = spread(look, inaccuracyDeg);
             Vec3 to = eye.add(dir.scale(RANGE_BLOCKS));
             Hit h = trace(level, p, eye, to);
+            bubbleTrail(level, eye, h.pos());
             if (h.entity() != null) {
                 double units = eye.distanceTo(h.pos()) * UNITS_PER_BLOCK;
                 double dmg = w.damage * Math.pow(w.rangeMod, units / 500.0);
@@ -52,6 +56,7 @@ public final class CS16Ballistics {
                 level.addParticle(ParticleTypes.SMOKE, h.pos().x, h.pos().y, h.pos().z, 0, 0.01, 0);
                 double units = eye.distanceTo(h.pos()) * UNITS_PER_BLOCK;
                 CS16Damage.damageBlock(mc, h.blockPos(), w.damage * Math.pow(w.rangeMod, units / 500.0));
+                if (level.getBlockState(h.blockPos()).is(Blocks.BELL)) CS16Damage.ringBell(mc, h.blockPos(), h.face());
             }
         }
     }
@@ -88,7 +93,24 @@ public final class CS16Ballistics {
                 if (d < bestD) { bestD = d; best = e; bestPos = hit.get(); }
             }
         }
-        return new Hit(best, bestPos != null ? bestPos : end, blockHit, blockHit ? bhr.getBlockPos() : null);
+        return new Hit(best, bestPos != null ? bestPos : end, blockHit, blockHit ? bhr.getBlockPos() : null, blockHit ? bhr.getDirection() : null);
+    }
+
+    /** Bullets leave a trail of bubbles wherever their path is under water. */
+    private static void bubbleTrail(Level level, Vec3 from, Vec3 to) {
+        if (!level.getFluidState(BlockPos.containing(from)).is(FluidTags.WATER)
+                && !level.getFluidState(BlockPos.containing(to)).is(FluidTags.WATER)) return;
+        double len = from.distanceTo(to);
+        if (len < 0.5) return;
+        Vec3 step = to.subtract(from).normalize().scale(0.5);
+        Vec3 pt = from;
+        int made = 0;
+        for (double d = 0; d < len && made < 40; d += 0.5, pt = pt.add(step)) {
+            if (level.getFluidState(BlockPos.containing(pt)).is(FluidTags.WATER)) {
+                level.addParticle(ParticleTypes.BUBBLE, pt.x, pt.y, pt.z, 0, 0.03, 0);
+                made++;
+            }
+        }
     }
 
     static Vec3 spread(Vec3 dir, double deg) {

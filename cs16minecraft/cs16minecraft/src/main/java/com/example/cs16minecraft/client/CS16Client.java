@@ -45,7 +45,12 @@ public final class CS16Client implements ClientModInitializer {
         // Minecraft's own interactions are disabled: no mining, placing, using items or attacking with fists.
         AttackBlockCallback.EVENT.register((player, level, hand, pos, dir) -> level.isClientSide() ? InteractionResult.FAIL : InteractionResult.PASS);
         AttackEntityCallback.EVENT.register((player, level, hand, entity, hit) -> level.isClientSide() ? InteractionResult.FAIL : InteractionResult.PASS);
-        UseBlockCallback.EVENT.register((player, level, hand, hit) -> level.isClientSide() ? InteractionResult.FAIL : InteractionResult.PASS);
+        UseBlockCallback.EVENT.register((player, level, hand, hit) -> {
+            if (!level.isClientSide()) return InteractionResult.PASS;
+            var block = level.getBlockState(hit.getBlockPos()).getBlock();
+            boolean door = block instanceof net.minecraft.world.level.block.DoorBlock || block instanceof net.minecraft.world.level.block.TrapDoorBlock;
+            return door ? InteractionResult.PASS : InteractionResult.FAIL; // only doors and trapdoors keep their right-click use
+        });
         UseItemCallback.EVENT.register((player, level, hand) -> level.isClientSide() ? InteractionResult.FAIL : InteractionResult.PASS);
         UseEntityCallback.EVENT.register((player, level, hand, entity, hit) -> level.isClientSide() ? InteractionResult.FAIL : InteractionResult.PASS);
 
@@ -82,13 +87,7 @@ public final class CS16Client implements ClientModInitializer {
 
         if (mc.player != null && o != null) {
             CS16WeaponManager wm = CS16WeaponManager.INSTANCE;
-            while (CS16Input.RADIO.consumeClick()) com.example.cs16minecraft.hud.CS16RadioMenu.toggle();
-            for (int i = 0; i < 9; i++) {
-                while (o.keyHotbarSlots[i].consumeClick()) {
-                    if (com.example.cs16minecraft.hud.CS16RadioMenu.isOpen()) com.example.cs16minecraft.hud.CS16RadioMenu.choose(i + 1, mc);
-                    else if (i < 5) wm.selectSlot(i + 1);
-                }
-            }
+            for (int i = 0; i < 5; i++) while (o.keyHotbarSlots[i].consumeClick()) wm.selectSlot(i + 1);
             while (CS16Input.RELOAD.consumeClick()) wm.requestReload();
             while (CS16Input.QUICK_SWITCH.consumeClick()) wm.quickSwitch();
             while (CS16Input.MIRROR.consumeClick()) wm.toggleMirror();

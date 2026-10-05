@@ -91,7 +91,6 @@ public final class CS16Hud {
             drawStatus(g, mc, sw, sh, frameDt, p);
             drawAmmo(g, wm, sw, sh, frameDt);
             if (now < wm.menuUntil) drawWeaponMenu(g, mc, wm);
-            CS16RadioMenu.draw(g, mc, sw, sh);
         }
         float flash = wm.grenades.flashAlpha(now);
         if (flash > 0) g.fill(0, 0, sw, sh, ((int) (flash * 255) << 24) | 0xFFFFFF);

@@ -81,6 +81,7 @@ public final class CS16GrenadeManager {
             case FLASH -> {
                 CS16SoundManager.INSTANCE.playAnyOf(vol, "weapons/flashbang-1.wav", "weapons/flashbang-2.wav");
                 blind(p, g.pos, now, level);
+                CS16Damage.flashMobs(mc, g.pos, 22);
                 CS16Damage.gunshot(mc, g.pos, 20);
             }
             case SMOKE -> {

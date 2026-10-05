@@ -46,7 +46,7 @@ public final class CS16WeaponManager {
     private boolean silenced = true, burstMode, altFire;
     private boolean needInit = true;
     private int scope, resumeScope = -1, burstLeft;
-    private double attachStart, attachDur, lastAlert;
+    private double attachStart, attachDur, lastAlert, swingStart = -10;
     private double burstNext, spray, lastShot, muzzleUntil, kick, punchPitch, punchYaw;
 
     private CS16WeaponManager() {
@@ -218,7 +218,7 @@ public final class CS16WeaponManager {
                 if (!atk) releaseQueued = true;
                 if (now >= phaseEnd) {
                     if (releaseQueued) beginThrow(now);
-                    else { state = State.GRENADE_HOLD; playIdle(); }
+                    else state = State.GRENADE_HOLD; // freeze on the last pin-pull frame until the button is released
                 }
             }
             case GRENADE_HOLD -> { if (!atk) beginThrow(now); }
@@ -232,6 +232,8 @@ public final class CS16WeaponManager {
 
     private void idle(Minecraft mc, LocalPlayer p, double now, boolean atk, boolean atkEdge, boolean sec, boolean secEdge) {
         CS16Weapon w = current;
+        // once a one-shot animation has finished, fall back to the idle loop instead of freezing on its last frame
+        if (!seqLoop && seq != null && now - seqStart > seq.duration() + 0.03 && burstLeft == 0) playIdle();
         if (resumeScope >= 0 && now >= nextAttack) { setScope(resumeScope); resumeScope = -1; }
         if (burstLeft > 0 && now >= burstNext) {
             if (ammo()[0] > 0) { shoot(mc, p, now); burstLeft--; burstNext = now + 0.055; } else burstLeft = 0;
@@ -241,7 +243,7 @@ public final class CS16WeaponManager {
         if (w.mode == CS16Weapon.Mode.MELEE) {
             if (now < nextAttack) return;
             if (atk) knife(mc, p, now, false);
-            else if (sec) knife(mc, p, now, true);
+            else if (sec && !lookingAtDoor(mc)) knife(mc, p, now, true);
         } else if (w.mode == CS16Weapon.Mode.GRENADE) {
             int[] a = ammo();
             boolean has = CS16Config.get().infiniteAmmo || a[0] > 0;
@@ -253,7 +255,7 @@ public final class CS16WeaponManager {
                 releaseQueued = false;
             }
         } else {
-            if (secEdge && now >= nextAttack) secondary(now);
+            if (secEdge && now >= nextAttack && !lookingAtDoor(mc)) secondary(now); // right click on a door opens it instead
             boolean burstActive = w.burst && burstMode;
             boolean want = (w.mode == CS16Weapon.Mode.AUTO && !burstActive) ? atk : atkEdge;
             if (want && now >= nextAttack && burstLeft == 0) {
@@ -356,6 +358,7 @@ public final class CS16WeaponManager {
     private void knife(Minecraft mc, LocalPlayer p, double now, boolean stab) {
         Sequence s = stab ? find("", "stab") : pickSlash();
         play(s, false);
+        if (s == null) swingStart = now; // model has no usable attack animation: procedural swing instead
         CS16SoundManager sm = CS16SoundManager.INSTANCE;
         double v = CS16Config.get().soundVolume;
         int hit = CS16Ballistics.melee(mc, p, stab ? 0.9 : 1.2, stab ? 65 : current.damage);
@@ -370,16 +373,38 @@ public final class CS16WeaponManager {
         nextAttack = now + (stab ? 1.1 : 0.42);
     }
 
+    private int slashIdx;
+
+    /** 0..1..0 over 0.4 s after a knife swing that has no animation in the model (drives a procedural swing). */
+    public double swing() {
+        double d = now() - swingStart;
+        return d < 0 || d > 0.4 ? 0 : Math.sin(d / 0.4 * Math.PI);
+    }
+
+    private static boolean lookingAtDoor(Minecraft mc) {
+        if (mc.level == null || !(mc.hitResult instanceof net.minecraft.world.phys.BlockHitResult bhr)) return false;
+        if (bhr.getType() != net.minecraft.world.phys.HitResult.Type.BLOCK) return false;
+        var b = mc.level.getBlockState(bhr.getBlockPos()).getBlock();
+        return b instanceof net.minecraft.world.level.block.DoorBlock || b instanceof net.minecraft.world.level.block.TrapDoorBlock;
+    }
+
+    /** Any attack animation the knife model has: slash / attack / swing / hit, else any non-idle, non-draw, non-stab one. */
     private Sequence pickSlash() {
         ModelData m = currentModel();
         if (m == null) return null;
-        int n = 0;
-        for (Sequence s : m.sequences) if (s.label.toLowerCase().contains("slash")) n++;
-        if (n == 0) return find("", "attack");
-        int pick = (altFire = !altFire) ? 0 : n - 1;
-        int i = 0;
-        for (Sequence s : m.sequences) if (s.label.toLowerCase().contains("slash") && i++ == pick) return s;
-        return null;
+        java.util.List<Sequence> c = new java.util.ArrayList<>();
+        for (Sequence q : m.sequences) {
+            String l = q.label.toLowerCase();
+            if (l.contains("slash") || l.contains("attack") || l.contains("swing") || l.contains("hit")) c.add(q);
+        }
+        if (c.isEmpty()) {
+            for (Sequence q : m.sequences) {
+                String l = q.label.toLowerCase();
+                if (!l.contains("idle") && !l.contains("draw") && !l.contains("deploy") && !l.contains("stab") && !l.contains("holster")) c.add(q);
+            }
+        }
+        if (c.isEmpty()) return null;
+        return c.get(slashIdx++ % c.size());
     }
 
     private void beginThrow(double now) {
@@ -503,7 +528,10 @@ public final class CS16WeaponManager {
             case "famas" -> { if (burstMode) names = new String[]{"weapons/famas-burst.wav"}; }
             default -> { }
         }
-        if (!sm.playAnyOf(v, names)) sm.playRandomGroup(v, "sound/weapons/" + w.id); // discover by prefix if names differ
+        Minecraft mcc = Minecraft.getInstance();
+        boolean wet = mcc.player != null && mcc.player.isUnderWater();
+        boolean ok = wet ? sm.playAnyOfMuffled(v * 0.8, names) : sm.playAnyOf(v, names); // muffled underwater
+        if (!ok) sm.playRandomGroup(v, "sound/weapons/" + w.id); // discover by prefix if names differ
     }
 
     private void play(Sequence s, boolean loop) {

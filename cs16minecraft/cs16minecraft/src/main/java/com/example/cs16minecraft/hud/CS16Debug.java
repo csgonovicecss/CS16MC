@@ -34,6 +34,11 @@ public final class CS16Debug {
             }
             l.add(sb.toString());
         }
+        if (w.currentModel() != null) {
+            StringBuilder sq = new StringBuilder("sequences: ");
+            for (var q : w.currentModel().sequences) { if (sq.length() > 150) { sq.append("..."); break; } sq.append(q.label).append(", "); }
+            l.add(sq.toString());
+        }
         l.add(String.format(Locale.ROOT, "velocity u/s: %.1f  %.1f  %.1f", m.vx, m.vy, m.vz));
         l.add(String.format(Locale.ROOT, "horizontal: %.1f u/s   vertical: %.1f u/s", m.horizontalSpeed(), m.vy));
         l.add("grounded: " + m.grounded + "   crouching: " + m.ducked + "   state: " + m.state);

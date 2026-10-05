@@ -190,6 +190,9 @@ public final class CS16WeaponRenderer {
         float oy = (float) cfg.viewmodel.offsetY + (float) (Math.sin(bobTime * 6.0) * amp * 0.35);
         float oz = (float) cfg.viewmodel.offsetZ - (float) (Math.abs(Math.cos(bobTime * 6.0)) * amp * 0.4) + (float) (wm.kick() * 0.4);
 
+        double swing = wm.swing();
+        if (swing > 0) { ox += (float) (4 * swing); oy -= (float) (9 * swing); oz -= (float) (3 * swing); }
+
         List<List<SubModel>> parts = m.bodyParts;
         if (parts.isEmpty()) {
             if (!m.subModels.isEmpty()) raster.drawSubModel(m, m.subModels.get(0), bones, ox, oy, oz, lt);

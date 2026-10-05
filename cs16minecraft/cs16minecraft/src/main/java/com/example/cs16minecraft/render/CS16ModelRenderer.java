@@ -56,8 +56,7 @@ public final class CS16ModelRenderer {
         stride = sw;
         maxH = sh;
         color = new int[sw * sh];
-        depth = new float[sw * sh];
-        Arrays.fill(depth, Float.POSITIVE_INFINITY);
+        depth = new float[sw * sh]; // stores 1/depth, 0 = empty
         dMinX = 1; dMinY = 1; dMaxX = 0; dMaxY = 0;
     }
 
@@ -79,7 +78,7 @@ public final class CS16ModelRenderer {
             for (int y = dMinY; y <= dMaxY; y++) {
                 int a = y * stride + dMinX, b = y * stride + dMaxX + 1;
                 Arrays.fill(color, a, b, 0);
-                Arrays.fill(depth, a, b, Float.POSITIVE_INFINITY);
+                Arrays.fill(depth, a, b, 0f);
             }
         }
         dMinX = 1; dMinY = 1; dMaxX = 0; dMaxY = 0;
@@ -185,17 +184,36 @@ public final class CS16ModelRenderer {
         int rows = dMaxY - dMinY + 1;
         int bands = parallel ? Math.max(1, Math.min(Math.min(Runtime.getRuntime().availableProcessors(), 8), rows / 24)) : 1;
         if (bands == 1 || tcount < 48) {
-            rasterBand(dMinY, dMaxY);
+            rasterBand(dMinY, dMaxY, null, tcount);
         } else {
+            // bin triangles into the bands they touch (once), so each thread only walks its own list, in draw order
             final int b = bands, y0 = dMinY;
-            IntStream.range(0, b).parallel().forEach(i ->
-                    rasterBand(y0 + (int) ((long) rows * i / b), y0 + (int) ((long) rows * (i + 1) / b) - 1));
+            final int[] edge = new int[b + 1];
+            for (int i = 0; i <= b; i++) edge[i] = y0 + (int) ((long) rows * i / b);
+            final int[] counts = new int[b];
+            int[][] lists = new int[b][];
+            int[] fill = new int[b];
+            for (int t = 0; t < tcount; t++) {
+                int o = t * FLOATS_PER_TRI;
+                float ay = tdata[o + 1], by = tdata[o + 3], cy = tdata[o + 5];
+                int lo = (int) Math.floor(Math.min(ay, Math.min(by, cy))), hi = (int) Math.ceil(Math.max(ay, Math.max(by, cy)));
+                for (int i = 0; i < b; i++) if (hi >= edge[i] && lo <= edge[i + 1] - 1) counts[i]++;
+            }
+            for (int i = 0; i < b; i++) lists[i] = new int[counts[i]];
+            for (int t = 0; t < tcount; t++) {
+                int o = t * FLOATS_PER_TRI;
+                float ay = tdata[o + 1], by = tdata[o + 3], cy = tdata[o + 5];
+                int lo = (int) Math.floor(Math.min(ay, Math.min(by, cy))), hi = (int) Math.ceil(Math.max(ay, Math.max(by, cy)));
+                for (int i = 0; i < b; i++) if (hi >= edge[i] && lo <= edge[i + 1] - 1) lists[i][fill[i]++] = t;
+            }
+            IntStream.range(0, b).parallel().forEach(i -> rasterBand(edge[i], edge[i + 1] - 1, lists[i], counts[i]));
         }
         tcount = 0;
     }
 
-    private void rasterBand(int bandY0, int bandY1) {
-        for (int t = 0; t < tcount; t++) {
+    private void rasterBand(int bandY0, int bandY1, int[] list, int n) {
+        for (int ti = 0; ti < n; ti++) {
+            int t = list == null ? ti : list[ti];
             int o = t * FLOATS_PER_TRI;
             double ax = tdata[o], ay = tdata[o + 1], bx = tdata[o + 2], by = tdata[o + 3], cx2 = tdata[o + 4], cy2 = tdata[o + 5];
             int minY = Math.max(bandY0, Math.max(0, (int) Math.floor(Math.min(ay, Math.min(by, cy2)))));
@@ -214,20 +232,29 @@ public final class CS16ModelRenderer {
             double w0row = ((cx2 - bx) * (minY + 0.5 - by) - (cy2 - by) * (px0 - bx)) * inv;
             double w1row = ((ax - cx2) * (minY + 0.5 - cy2) - (ay - cy2) * (px0 - cx2)) * inv;
 
+            // 1/z, u/z and v/z are linear in screen space: F = Fc + (Fa-Fc)*w0 + (Fb-Fc)*w1
             double iza = tdata[o + 6], izb = tdata[o + 7], izc = tdata[o + 8];
             double ua = tdata[o + 9], ub = tdata[o + 10], uc = tdata[o + 11];
             double va = tdata[o + 12], vb = tdata[o + 13], vc = tdata[o + 14];
+            double izA = iza - izc, izB = izb - izc, uA = ua - uc, uB = ub - uc, vA = va - vc, vB = vb - vc;
+            double izdx = izA * dw0dx + izB * dw1dx, izdy = izA * dw0dy + izB * dw1dy;
+            double udx = uA * dw0dx + uB * dw1dx, udy = uA * dw0dy + uB * dw1dy;
+            double vdx = vA * dw0dx + vB * dw1dx, vdy = vA * dw0dy + vB * dw1dy;
+            double izRow = izc + izA * w0row + izB * w1row;
+            double uRow = uc + uA * w0row + uB * w1row;
+            double vRow = vc + vA * w0row + vB * w1row;
+
             Texture tex = texList.get(ttex[t]);
             int[] px = tex.argb;
             int tw = tex.width, th = tex.height;
             boolean pow2 = (tw & (tw - 1)) == 0 && (th & (th - 1)) == 0;
             int mx = tw - 1, my = th - 1;
             boolean additive = (tflags[t] & 1) != 0, smooth = (tflags[t] & 2) != 0;
-            float lightF = tlight[t];
-            int lightI = (int) (lightF * 256f);
+            int lightI = (int) (tlight[t] * 256f);
 
             for (int y = minY; y <= maxY; y++) {
-                double w0 = w0row + dw0dy * (y - minY), w1 = w1row + dw1dy * (y - minY), w2 = 1.0 - w0 - w1;
+                int dy = y - minY;
+                double w0 = w0row + dw0dy * dy, w1 = w1row + dw1dy * dy, w2 = 1.0 - w0 - w1;
                 // analytic span: all three barycentrics must be >= 0
                 double lo = 0, hi = maxX - minX;
                 if (dw0dx > 1e-12) lo = Math.max(lo, -w0 / dw0dx); else if (dw0dx < -1e-12) hi = Math.min(hi, -w0 / dw0dx); else if (w0 < 0) continue;
@@ -235,21 +262,19 @@ public final class CS16ModelRenderer {
                 if (dw2dx > 1e-12) lo = Math.max(lo, -w2 / dw2dx); else if (dw2dx < -1e-12) hi = Math.min(hi, -w2 / dw2dx); else if (w2 < 0) continue;
                 int k0 = (int) Math.ceil(lo - 1e-9), k1 = (int) Math.floor(hi + 1e-9);
                 if (k0 > k1) continue;
-                int rowBase = y * stride + minX;
-                for (int k = k0; k <= k1; k++) {
-                    double a0 = w0 + dw0dx * k, a1 = w1 + dw1dx * k, a2 = 1.0 - a0 - a1;
-                    double iz = a0 * iza + a1 * izb + a2 * izc;
-                    if (iz <= 0) continue;
+                int idx = y * stride + minX + k0;
+                double iz = izRow + izdy * dy + izdx * k0;
+                double uz = uRow + udy * dy + udx * k0;
+                double vz = vRow + vdy * dy + vdx * k0;
+                for (int k = k0; k <= k1; k++, idx++, iz += izdx, uz += udx, vz += vdx) {
+                    if (iz <= depth[idx]) continue;          // nearer pixels have larger 1/z: no division for hidden pixels
                     double rz = 1.0 / iz;
-                    int idx = rowBase + k;
-                    if (rz >= depth[idx]) continue;
-                    double u = (a0 * ua + a1 * ub + a2 * uc) * rz;
-                    double v = (a0 * va + a1 * vb + a2 * vc) * rz;
+                    double u = uz * rz, v = vz * rz;
                     int src;
                     if (smooth) {
                         src = bilinear(px, tw, th, mx, my, pow2, u, v);
                     } else {
-                        int ix = (int) Math.floor(u), iy = (int) Math.floor(v);
+                        int ix = fastFloor(u), iy = fastFloor(v);
                         if (pow2) { ix &= mx; iy &= my; } else { ix = Math.floorMod(ix, tw); iy = Math.floorMod(iy, th); }
                         src = px[iy * tw + ix];
                         if ((src >>> 24) == 0) continue;
@@ -264,18 +289,23 @@ public final class CS16ModelRenderer {
                         color[idx] = (na << 24) | (nr << 16) | (ng << 8) | nb;
                     } else {
                         color[idx] = 0xFF000000 | (Math.min(255, r) << 16) | (Math.min(255, g) << 8) | Math.min(255, bl);
-                        depth[idx] = (float) rz;
+                        depth[idx] = (float) iz;
                     }
                 }
             }
         }
     }
 
+    private static int fastFloor(double x) {
+        int i = (int) x;
+        return x < i ? i - 1 : i;
+    }
+
     /** Fixed-point (8-bit weights) bilinear sample with packed red/blue and green lerps. */
     private static int bilinear(int[] px, int tw, int th, int mx, int my, boolean pow2, double u, double v) {
         u -= 0.5;
         v -= 0.5;
-        int x0 = (int) Math.floor(u), y0 = (int) Math.floor(v);
+        int x0 = fastFloor(u), y0 = fastFloor(v);
         int fx = (int) ((u - x0) * 256.0), fy = (int) ((v - y0) * 256.0);
         int xa, xb, ya, yb;
         if (pow2) { xa = x0 & mx; xb = (x0 + 1) & mx; ya = y0 & my; yb = (y0 + 1) & my; }
