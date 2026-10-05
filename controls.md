@@ -14,7 +14,7 @@
 # Projectiles
 
 * **Throw:** `LMB`
-* **Hold pin:** `Hold LMB`
+* **Hold pin:** `Hold LMB` (added at release 1.2)
 * **Cancel:** `Switch to any weapon`
 
 # Movement
