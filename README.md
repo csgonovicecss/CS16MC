@@ -3,6 +3,7 @@
 A Fabric mod, which reimplements Counter-Strike 1.6 weapons inside of Minecraft.
 
 It integrates **ALL**, yes **ALL** the CS16 weapons into Minecraft, with remade functionality.
+It also replaces the original Minecraft movement, and sounds!
 # Controls
 [![Controls](https://img.shields.io/badge/Controls-View-blue)](https://github.com/csgonovicecss/CS16MC/blob/main/controls.md)
 
