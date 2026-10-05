@@ -1,6 +1,6 @@
 # CS16MC
 
-A 26.2 Fabric mod, which reimplements Counter-Strike 1.6 weapons inside of Minecraft 26.2.
+A Fabric mod, which reimplements Counter-Strike 1.6 weapons inside of Minecraft.
 
 It integrates **ALL**, yes **ALL** the CS16 weapons into Minecraft, with remade functionality.
 
