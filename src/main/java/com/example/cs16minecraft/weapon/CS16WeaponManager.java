@@ -229,10 +229,6 @@ public final class CS16WeaponManager {
             case PLANT -> {
                 if (!atk || !CS16Client.MOVEMENT.controller.grounded) cancelPlant(now);
                 else if (now - plantStart >= CS16Config.get().c4PlantSeconds) finishPlant(mc, p, now);
-                else if (now >= clickAt) {
-                    CS16SoundManager.INSTANCE.playFirst(CS16Config.get().soundVolume * 0.5, "weapons/c4_click.wav");
-                    clickAt = now + 0.5;
-                }
             }
             case IDLE -> idle(mc, p, now, atk, atkEdge, sec, secEdge);
         }

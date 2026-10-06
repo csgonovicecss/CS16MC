@@ -90,7 +90,6 @@ public final class CS16Hud {
             else if (wm.current.isGun()) CS16Crosshair.draw(g, sw, sh, wm.inaccuracy, vfov, u, frameDt);
             drawStatus(g, mc, sw, sh, frameDt, p);
             drawAmmo(g, wm, sw, sh, frameDt);
-            drawBombHud(g, mc, sw, sh, wm);
             if (now < wm.menuUntil) drawWeaponMenu(g, mc, wm);
         }
         float flash = wm.grenades.flashAlpha(now);
@@ -241,22 +240,6 @@ public final class CS16Hud {
                 }
             }
             x += colW + 8;
-        }
-    }
-
-    private static void drawBombHud(GuiGraphicsExtractor g, Minecraft mc, int sw, int sh, CS16WeaponManager wm) {
-        double prog = wm.plantProgress();
-        if (prog > 0) {
-            int bw = (int) (sw * 0.18), x = (sw - bw) / 2, y = (int) (sh * 0.62);
-            g.fill(x - 1, y - 1, x + bw + 1, y + 7, 0xAA000000);
-            g.fill(x, y, x + (int) (bw * prog), y + 6, 0xFFFFA000);
-            g.text(mc.font, "Planting C4...", x, y - 11, 0xFFFFA000);
-        }
-        double nowS = CS16WeaponManager.now(), left = Double.MAX_VALUE;
-        for (double[] b : wm.grenades.bombs) left = Math.min(left, CS16Config.get().c4FuseSeconds - (nowS - b[3]));
-        if (left != Double.MAX_VALUE) {
-            String s = String.format(java.util.Locale.ROOT, "C4: %.1f", Math.max(0, left));
-            g.text(mc.font, s, (sw - mc.font.width(s)) / 2, 12, 0xFFFF3030);
         }
     }
 

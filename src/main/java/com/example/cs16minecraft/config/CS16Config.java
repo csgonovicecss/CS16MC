@@ -38,7 +38,7 @@ public final class CS16Config {
     /** Gunshots attract hostile mobs and scare villagers/cats; radius depends on the weapon (silenced = much quieter). */
     public boolean mobAlerts = true;
     /** C4: seconds to plant (hold fire), fuse, blast radius (blocks), damage (out of 100 hp, HE grenade = 100 / 8.75 blocks), crater radius. */
-    public double c4PlantSeconds = 3.0, c4FuseSeconds = 10.0, c4Radius = 20.0, c4Damage = 500.0, c4CraterRadius = 7.0;
+    public double c4PlantSeconds = 3.0, c4FuseSeconds = 52.0, c4Radius = 20.0, c4Damage = 500.0, c4CraterRadius = 7.0;
     public double craterRadius = 3.2;
     /** Idle HUD brightness (GoldSrc MIN_ALPHA = 100). */
     public int hudMinAlpha = 100;
