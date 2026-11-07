@@ -28,6 +28,7 @@
 
 * **Radio:** `G` (feature removed)
 * **Mirror viewmodel:** `H`
+* **Flashlight:** `F` (added at release 1.5)
 
 # Debug
 
