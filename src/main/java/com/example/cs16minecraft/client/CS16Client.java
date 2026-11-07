@@ -91,6 +91,7 @@ public final class CS16Client implements ClientModInitializer {
             while (CS16Input.RELOAD.consumeClick()) wm.requestReload();
             while (CS16Input.QUICK_SWITCH.consumeClick()) wm.quickSwitch();
             while (CS16Input.MIRROR.consumeClick()) wm.toggleMirror();
+            while (CS16Input.FLASHLIGHT.consumeClick()) CS16Flashlight.toggle();
             com.example.cs16minecraft.weapon.CS16Damage.tickPanic(mc);
 
             boolean active = MOVEMENT.active(mc.player);

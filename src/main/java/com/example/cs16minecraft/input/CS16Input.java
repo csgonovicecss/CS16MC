@@ -23,6 +23,7 @@ public final class CS16Input {
     public static final KeyMapping QUICK_SWITCH = key("quickswitch", InputConstants.KEY_Q);
     public static final KeyMapping USE = key("use", InputConstants.KEY_E);
     public static final KeyMapping SCOREBOARD = key("scoreboard", InputConstants.KEY_TAB);
+    public static final KeyMapping FLASHLIGHT = key("flashlight", InputConstants.KEY_F);
     public static final KeyMapping MIRROR = key("mirror", InputConstants.KEY_H);
     public static final KeyMapping DEBUG = key("debug", InputConstants.KEY_F8);
 
@@ -48,6 +49,7 @@ public final class CS16Input {
         o.keySprint.setKey(InputConstants.UNKNOWN);
         o.keyShift.setKey(InputConstants.UNKNOWN);
         o.keyPlayerList.setKey(InputConstants.UNKNOWN);
+        o.keySwapOffhand.setKey(InputConstants.UNKNOWN); // vanilla F (swap hands) would clash with the flashlight
         KeyMapping.resetMapping();
         o.save();
     }

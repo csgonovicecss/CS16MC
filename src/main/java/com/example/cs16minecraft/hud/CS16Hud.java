@@ -4,6 +4,7 @@ import com.example.cs16minecraft.CS16Minecraft;
 import com.example.cs16minecraft.assets.CS16AssetManager;
 import com.example.cs16minecraft.audio.CS16FootstepManager;
 import com.example.cs16minecraft.client.CS16Client;
+import com.example.cs16minecraft.client.CS16Flashlight;
 import com.example.cs16minecraft.client.CS16PlayerState;
 import com.example.cs16minecraft.config.CS16Config;
 import com.example.cs16minecraft.render.CS16WeaponRenderer;
@@ -67,6 +68,7 @@ public final class CS16Hud {
         if (ready) {
             wm.update(mc, p, frameDt);
             CS16FootstepManager.INSTANCE.tick(mc, p, frameDt);
+            CS16Flashlight.update(mc, p, frameDt);
         }
         if (mc.gui.hud.isHidden()) return;
 
@@ -90,6 +92,7 @@ public final class CS16Hud {
             else if (wm.current.isGun()) CS16Crosshair.draw(g, sw, sh, wm.inaccuracy, vfov, u, frameDt);
             drawStatus(g, mc, sw, sh, frameDt, p);
             drawAmmo(g, wm, sw, sh, frameDt);
+            drawFlashlight(g, sw);
             if (now < wm.menuUntil) drawWeaponMenu(g, mc, wm);
         }
         float flash = wm.grenades.flashAlpha(now);
@@ -240,6 +243,30 @@ public final class CS16Hud {
                 }
             }
             x += colW + 8;
+        }
+    }
+
+    /** Port of the original CHudFlashlight: casing, battery fill from the right, beam when on; red below 20%. */
+    private static void drawFlashlight(GuiGraphicsExtractor g, int sw) {
+        TextureBridge.Tex empty = TextureBridge.hud("flash_empty");
+        if (empty == null) return;
+        double hudW = sw / u;
+        int w = empty.w();
+        boolean on = CS16Flashlight.isOn();
+        double bat = CS16Flashlight.battery();
+        int a = on ? 225 : CS16Config.get().hudMinAlpha;
+        int col = bat < 0.20 ? hudColor(250, 0, 0, a) : hudColor(255, 160, 0, a);
+        double y = Math.max(4, empty.h() / 2.0);
+        double x = hudW - w - w / 2.0;
+        sprite(g, "flash_empty", x, y, col);
+        TextureBridge.Tex beam = TextureBridge.hud("flash_beam");
+        if (on && beam != null) sprite(g, "flash_beam", hudW - w / 2.0, y, col);
+        TextureBridge.Tex full = TextureBridge.hud("flash_full");
+        int off = (int) (w * (1.0 - bat));
+        if (full != null && off < full.w()) {
+            TextureBridge.drawRegion(g, full.id(), (int) Math.round((x + off) * u), (int) Math.round(y * u),
+                    Math.max(1, (int) Math.round((full.w() - off) * u)), Math.max(1, (int) Math.round(full.h() * u)),
+                    off, 0, full.w() - off, full.h(), full.w(), full.h(), col);
         }
     }
 
